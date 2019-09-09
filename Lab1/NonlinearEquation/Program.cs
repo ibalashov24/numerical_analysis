@@ -47,8 +47,6 @@ namespace NonlinearEquation
             var currentLeft = segment.Item1;
             var currentRight = segment.Item2;
             Console.WriteLine($"Начальное приближение к корню: x_0 = {(currentRight + currentLeft) / 2}");
-            
-            var isIncreasing = F(currentLeft) <= 0;
             var stepCounter = 0;
 
             while (currentRight - currentLeft > 2 * Eps)
@@ -56,7 +54,7 @@ namespace NonlinearEquation
                 var middlePoint = (currentRight + currentLeft) / 2;
                 var valueInMiddle = F(middlePoint);
 
-                if (isIncreasing && valueInMiddle <= 0 || !isIncreasing && valueInMiddle >= 0)
+                if (F(currentRight) * valueInMiddle < 0)
                 {
                     currentLeft = middlePoint;
                 }
@@ -79,13 +77,48 @@ namespace NonlinearEquation
         /// Выполняет уточнение корней уравнения F(x)=0 методом Ньютона
         /// </summary>
         /// <param name="segment">Отрезок, на котором выполняется поиск</param>
-        /// <param name="useModifiedVersion">Использовать модифицированный алгоритм</param>
-        private static void NewtonMethod(Tuple<double, double> segment, bool useModifiedVersion = false)
+        private static void NewtonMethod(Tuple<double, double> segment)
         {
-            var calcNext = useModifiedVersion
-                ? (Func<double, double>) ((previous) => previous - F(previous) / FDerivative(segment.Item2))
-                : (Func<double, double>) ((previous) => previous - F(previous) / FDerivative(previous));
+            const double zeroEpsilon = 1e-5;
+            Func<double, int, double> calcNext = (previous, p) => previous - p * F(previous) / FDerivative(previous);
             
+            var multiplicity = 1;
+            var currentEstimation = segment.Item2;
+            var nextEstimation = calcNext(currentEstimation, multiplicity);
+            Console.WriteLine($"Начальное приближение к корню: {currentEstimation}");
+
+            var stepCounter = 0;
+            while (Math.Abs(nextEstimation - currentEstimation) > Eps)
+            {
+                currentEstimation = nextEstimation;
+
+                var derivative = FDerivative(nextEstimation);
+                if (Math.Abs(derivative) < zeroEpsilon)
+                {
+                    currentEstimation = segment.Item2;
+                    multiplicity += 2;
+                }
+
+                nextEstimation = calcNext(currentEstimation, multiplicity);
+                stepCounter++;
+            }
+            
+            Console.WriteLine($"Количество шагов для достижения точности \u03B5: {stepCounter}");
+            Console.WriteLine($"Приближенное решение x_N: {nextEstimation}");
+            Console.WriteLine(
+                $"Расстояние между последними приближениями: {Math.Abs(nextEstimation - currentEstimation)}");
+            Console.WriteLine($"Модуль невязки для x_N: {Math.Abs(F(nextEstimation))}");
+            Console.WriteLine();
+        }
+        
+        /// <summary>
+        /// Выполняет уточнение корней уравнения F(x)=0 модифицированным методом Ньютона
+        /// </summary>
+        /// <param name="segment">Отрезок, на котором выполняется поиск</param>
+        private static void ModifiedNewtonMethod(Tuple<double, double> segment)
+        {
+            var calcNext = (Func<double, double>) ((previous) => previous - F(previous) / FDerivative(segment.Item2));
+
             var currentEstimation = segment.Item2;
             var nextEstimation = calcNext(currentEstimation);
             Console.WriteLine($"Начальное приближение к корню: {currentEstimation}");
@@ -168,10 +201,10 @@ namespace NonlinearEquation
                 BinarySearch(segment);
                 
                 Console.WriteLine("2) Метод Ньютона");
-                NewtonMethod(segment, false);
+                NewtonMethod(segment);
                 
                 Console.WriteLine("3) Модифицированный метод Ньютона");
-                NewtonMethod(segment, true);
+                ModifiedNewtonMethod(segment);
                 
                 Console.WriteLine("4) Метод секущих");
                 SecantMethod(segment);
