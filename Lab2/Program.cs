@@ -7,7 +7,8 @@ namespace Interpolation
 
     class Program
     {
-        private static double _interpolationRangeWidth = 1;
+        private static double _leftInterpolationRangeBorder = 0;
+        private static double _rightInterpolationRangeBorder = 1;
 
         static double F(double x) => Math.Exp(x) - x;
 
@@ -41,25 +42,22 @@ namespace Interpolation
         }
 
         /// <summary>
-        /// Генерирует равноотстоящие узлы интерполяции вокруг точки интерполяции 
+        /// Генерирует равноотстоящие узлы интерполяции 
         /// </summary>
         /// <param name="tableEntriesCount">Количество узлов интерполяции для генерации</param>
-        /// <param name="interpolationPoint">Точка интерполяции</param>
         /// <returns>Список узлов интерполяции</returns>
-        static InterpolationNodes GenerateinterpolationNodes(int tableEntriesCount, double interpolationPoint)
+        static InterpolationNodes GenerateinterpolationNodes(int tableEntriesCount)
         {
-            double rangeStartPoint = interpolationPoint - _interpolationRangeWidth / 2;
-            double rangeEndPoint = interpolationPoint + _interpolationRangeWidth / 2;
-            double stepWidth = _interpolationRangeWidth / tableEntriesCount;
+            double stepWidth = (_rightInterpolationRangeBorder - _leftInterpolationRangeBorder) / tableEntriesCount;
 
             var result = new InterpolationNodes();
             for (int i = 0; i < tableEntriesCount; ++i)
             {
-                var currentPoint = rangeStartPoint + i * stepWidth;
+                var currentPoint = _leftInterpolationRangeBorder + i * stepWidth;
                 result.Add(currentPoint);
             }
 
-            result.Add(rangeEndPoint);
+            result.Add(_rightInterpolationRangeBorder);
 
             return result;
         }
@@ -156,7 +154,7 @@ namespace Interpolation
                 Console.WriteLine();
 
                 Console.WriteLine($"Число значений в таблице: {tableEntriesCount}");
-                var interpolationNodes = GenerateinterpolationNodes(tableEntriesCount, interpolationPoint);
+                var interpolationNodes = GenerateinterpolationNodes(tableEntriesCount);
                 Console.WriteLine("Исходная таблица значений функции:");
                 foreach (var interpolationNode in interpolationNodes)
                 {
