@@ -130,61 +130,8 @@ namespace Lab5
             return current;
         }
 
-        private static double CalcDerivative(
-                Func<double, double> function,
-                double x,
-                int power)
-        {
-            /*var functionValues = new double[3] { 
-                    function(x), 
-                    function(x + STANDARD_STEP),
-                    function(x + 2 * STANDARD_STEP)};
-
-            /for (int i = 1; i <= power; ++i)
-            {
-                var newFunctionValues = new double[3];
-                newFunctionValues[0] = 
-                    (-3 * functionValues[0] + 4 * functionValues[1] - functionValues[2]) / 
-                        (2 * STANDARD_STEP);
-                newFunctionValues[1] =
-                    (functionValues[2] - functionValuxes[0]) / (2 * STANDARD_STEP);
-                newFunctionValues[2] = 
-                    (3 * functionValues[2] - 4 * functionValues[1] + functionValues[0]) /
-                        (2 * STANDARD_STEP);
-
-                functionValues = newFunctionValues;
-            }
-
-            return functionValues[0];*/
-
-            // k should be less or equal than n
-            Func<int, int, int> calcCombinations = (int n, int k) =>
-            {
-                int result = 1;
-                for (int i = k + 1; i <= n; ++i)
-                {
-                    result *= i;
-                }
-                for (int i = 2; i <= n - k; ++i)
-                {
-                    result /= i;
-                }
-                return result;
-            };
-
-            double result = 0;
-            for (int i = 0; i <= power; ++i)
-            {
-                result += ((i + power) % 2 == 0 ? 1.0 : -1.0) * function(x + StandardStep * i) *
-                          calcCombinations(power, i);
-            }
-            for (int i = 0; i < power; ++i)
-            {
-                result /= StandardStep;
-            }
-
-            return result;
-        }
+        private static int CalcCombinations(int n, int k) =>
+            CalcFactorial(n) / CalcFactorial(k) / CalcFactorial(n - k);
 
         private static int CalcFactorial(int n)
         {
@@ -199,48 +146,38 @@ namespace Lab5
 
         public static double ChebyshevHermitePolynom(double x, int n)
         {
-            Func<double, double> funcUnderDerivative = 
-                point => Math.Exp(-point * point);
-
-            // Calculating derivative for Rodrique formula
-            double multiplicator = CalcFactorial(n);
-            double derivative = multiplicator;
-            double powerX = 1;
-            double divider = 1;
-            for (int i = 1; i < n; ++i)
+            double result = 0;
+            for (int i = 0; i < (int) (n / 2.0); ++i)
             {
-                derivative += (i % 2 == 0 ? 1 : -1) * powerX * multiplicator / divider;
-
-                multiplicator *= i + n;
-                divider *= i;
-                powerX *= x;
+                result += (i % 2 == 0 ? 1.0 : -1.0)
+                          / CalcFactorial(i)
+                          / CalcFactorial(n - 2 * i)
+                          * Math.Pow(2 * x, n - 2 * i);
             }
+            result *= CalcFactorial(n);
 
-            return (n % 2 == 0 ? 1.0 : -1.0) * Math.Exp(x * x) * derivative;
+            return result;
         }
-
+        
         public static double ChebyshevLegarrPolynom(double x, int n)
         {
-            const double alpha = 1.0 / 2;
-            Func<double, double> funcUnderDerivative = 
-                point => Math.Pow(point, alpha + n) * Math.Exp(-point);
+            const int alpha = 1;
             
-            // Calculating derivative for ... formula
-            double multiplicator = 1;
-            double derivative = 
-                n % 2 == 0 ? 1 : -1 * x / CalcFactorial(n / 2 + 1);
+            double result = 0;
             double powerX = 1;
-            double divider = 1;
-            for (int i = (int) Math.Ceiling(n / 2.0); i < n; ++i)
+            for (int i = 0; i <= n; ++i)
             {
-                multiplicator *= (2 * i - 1) * (2 * i);
-                divider *= i * (2 * i - n - 1) * (2 * i - n);
-                powerX *= x * x;
+                result += (i % 2 == 0 ? 1.0 : -1.0)
+                          / CalcFactorial(n - i)
+                          / CalcFactorial(alpha + i)
+                          * powerX
+                          / CalcFactorial(i);
                 
-                derivative += (i % 2 == 0 ? 1 : -1) * powerX * multiplicator / divider;
+                powerX *= x;
             }
+            result *= CalcFactorial(n + alpha);
 
-            return (n % 2 == 0 ? 1 : -1) * Math.Pow(x, -alpha) * Math.Exp(x) * derivative;
+            return result;
         }
 
         public static void Main()
@@ -257,10 +194,10 @@ namespace Lab5
             WriteAllRoots((double x) => ChebyshevPolynom(x, n), -1, 1);
 
             Console.WriteLine("Корни многочлена Чебышёва-Эрмита:");
-            WriteAllRoots((double x) => ChebyshevHermitePolynom(x, n), -100, 100);
+            WriteAllRoots((double x) => ChebyshevHermitePolynom(x, n), -3000, 3000);
 
             Console.WriteLine("Корни многочлена Чебышева-Легерра:");
-            WriteAllRoots((double x) => ChebyshevLegarrPolynom(x, n), 0, 10);
+            WriteAllRoots((double x) => ChebyshevLegarrPolynom(x, n), 0, 100);
         }
     }
 
