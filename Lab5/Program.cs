@@ -5,8 +5,154 @@ namespace Lab5
 {
     public static class Program
     {
+        /// <summary>
+        /// Шаг аргумента, с которым рассматриваем значения функции
+        /// </summary>
         const double StandardStep = 1e-2;
 
+        /// <summary>
+        /// Вычисляет значение многочлена Лежандра
+        /// </summary>
+        /// <param name="x">Точка, в которой вычисляем</param>
+        /// <param name="n">Степень многочлена</param>
+        /// <returns>Значение многочлена в данной точке</returns>
+        public static double LegendrePolynom(double x, int n)
+        {
+            if (n == 0) 
+            {
+                return 1;
+            }
+           
+            double last = 1.0;
+            double current = x;
+            for (int i = 2; i <= n; ++i)
+            {
+                var newLast = current;
+                current = (double) (2 * n - 1) / n * x * current - (double) (n - 1) / n * last;
+                last = newLast;
+            }
+
+            return current;
+        }
+        
+        /// <summary>
+        /// Вычисляет значение многочлена Чебышёва 1 рода
+        /// </summary>
+        /// <param name="x">Точка, в которой вычисляем</param>
+        /// <param name="n">Степень многочлена</param>
+        /// <returns>Значение многочлена в данной точке</returns>
+        public static double ChebyshevPolynom(double x, int n)
+        {
+            if (n == 0)
+            {
+                return 1;
+            }
+
+            double last = 1.0;
+            double current = x;
+            for (int i = 2; i <= n; ++i)
+            {
+                var newLast = current;
+                current = 2 * x * current - last;
+                last = newLast;
+            }
+
+            return current;
+        }
+
+        /// <summary>
+        /// Вычисляет факториал
+        /// </summary>
+        /// <param name="n">Число, факториал которого вычисляем</param>
+        /// <returns>Факториал</returns>
+        private static int CalcFactorial(int n)
+        {
+            var result = 1;
+            for (int i = 1; i <= n; ++i)
+            {
+                result *= i;
+            }
+
+            return result;
+        }
+        
+        /// <summary>
+        /// Вычисляет значение многочлена Чебышёва-Эрмита
+        /// </summary>
+        /// <param name="x">Точка, в которой вычисляем</param>
+        /// <param name="n">Степень многочлена</param>
+        /// <returns>Значение многочлена в данной точке</returns>
+        public static double ChebyshevHermitePolynom(double x, int n)
+        {
+            double result = 0;
+            for (int i = 0; i <= (int) (n / 2.0); ++i)
+            {
+                result += (i % 2 == 0 ? 1.0 : -1.0)
+                          / CalcFactorial(i)
+                          / CalcFactorial(n - 2 * i)
+                          * Math.Pow(2 * x, n - 2 * i);
+            }
+            result *= CalcFactorial(n);
+
+            return result;
+        }
+        
+        /// <summary>
+        /// Вычисляет значение многочлена Чебышёва-Лагерра
+        /// </summary>
+        /// <param name="x">Точка, в которой вычисляем</param>
+        /// <param name="n">Степень многочлена</param>
+        /// <returns>Значение многочлена в данной точке</returns>
+        public static double ChebyshevLegarrPolynom(double x, int n)
+        {
+            const int alpha = 1;
+            
+            double result = 0;
+            double powerX = 1;
+            for (int i = 0; i <= n; ++i)
+            {
+                result += (i % 2 == 0 ? 1.0 : -1.0)
+                          / CalcFactorial(n - i)
+                          / CalcFactorial(alpha + i)
+                          * powerX
+                          / CalcFactorial(i);
+                
+                powerX *= x;
+            }
+            result *= CalcFactorial(n + alpha);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Строит график заданной фукнции в указанных границах. График записывается в файл по заданному пути.
+        /// </summary>
+        /// <param name="function">Функция, график которой строим</param>
+        /// <param name="leftBorder">Левая граница промежутка</param>
+        /// <param name="rightBorder">Правая граница промежутка</param>
+        /// <param name="outputFileName">Путь итогового графика</param>
+        private static void PlotFunction(
+            Func<double, double> function, double leftBorder, double rightBorder, String outputFileName)
+        {
+            const double step = 0.01;
+            
+            GnuPlot.Set("terminal png size 400,400", $"output '{outputFileName}'");
+
+            var pointsCount = (int) ((rightBorder - leftBorder) / step) + 1;
+            var x = new double[pointsCount];
+            var y = new double[pointsCount];
+            int i = 0;
+            for (double point = leftBorder; point <= rightBorder; point += step)
+            {
+                x[i] = point;
+                y[i] = function(point);
+
+                ++i;
+            }
+            
+            GnuPlot.Plot(x, y);
+        }
+        
         /// <summary>
         /// Выполняет отделение корней уравнения F(x)=0 на заданном отрезке
         /// </summary>
@@ -92,94 +238,6 @@ namespace Lab5
             }
         }
 
-        public static double LegendrePolynom(double x, int n)
-        {
-            if (n == 0) 
-            {
-                return 1;
-            }
-           
-            double last = 1.0;
-            double current = x;
-            for (int i = 2; i <= n; ++i)
-            {
-                var newLast = current;
-                current = (double) (2 * n - 1) / n * x * current - (double) (n - 1) / n * last;
-                last = newLast;
-            }
-
-            return current;
-        }
-
-        public static double ChebyshevPolynom(double x, int n)
-        {
-            if (n == 0)
-            {
-                return 1;
-            }
-
-            double last = 1.0;
-            double current = x;
-            for (int i = 2; i <= n; ++i)
-            {
-                var newLast = current;
-                current = 2 * x * current - last;
-                last = newLast;
-            }
-
-            return current;
-        }
-
-        private static int CalcCombinations(int n, int k) =>
-            CalcFactorial(n) / CalcFactorial(k) / CalcFactorial(n - k);
-
-        private static int CalcFactorial(int n)
-        {
-            var result = 1;
-            for (int i = 1; i <= n; ++i)
-            {
-                result *= i;
-            }
-
-            return result;
-        }
-
-        public static double ChebyshevHermitePolynom(double x, int n)
-        {
-            double result = 0;
-            for (int i = 0; i < (int) (n / 2.0); ++i)
-            {
-                result += (i % 2 == 0 ? 1.0 : -1.0)
-                          / CalcFactorial(i)
-                          / CalcFactorial(n - 2 * i)
-                          * Math.Pow(2 * x, n - 2 * i);
-            }
-            result *= CalcFactorial(n);
-
-            return result;
-        }
-        
-        public static double ChebyshevLegarrPolynom(double x, int n)
-        {
-            const int alpha = 1;
-            
-            double result = 0;
-            double powerX = 1;
-            for (int i = 0; i <= n; ++i)
-            {
-                result += (i % 2 == 0 ? 1.0 : -1.0)
-                          / CalcFactorial(n - i)
-                          / CalcFactorial(alpha + i)
-                          * powerX
-                          / CalcFactorial(i);
-                
-                powerX *= x;
-            }
-            result *= CalcFactorial(n + alpha);
-
-            return result;
-        }
-
         public static void Main()
         {
             Console.WriteLine("Классические ортогональные многочлены");
@@ -189,15 +247,22 @@ namespace Lab5
 
             Console.WriteLine("Корни многочлена Лежандра: ");
             WriteAllRoots((double x) => LegendrePolynom(x, n), -1, 1);
+            PlotFunction(x => LegendrePolynom(x, n), -1, 1, "legendre.png");
 
             Console.WriteLine("Корни иногочлена Чебышева 1 рода:");
-            WriteAllRoots((double x) => ChebyshevPolynom(x, n), -1, 1);
+            WriteAllRoots(x => ChebyshevPolynom(x, n), -1, 1);
+            PlotFunction(function: x => ChebyshevPolynom(x, n), -1, 1, "chebyshev.png");
 
             Console.WriteLine("Корни многочлена Чебышёва-Эрмита:");
-            WriteAllRoots((double x) => ChebyshevHermitePolynom(x, n), -3000, 3000);
+            WriteAllRoots((double x) => ChebyshevHermitePolynom(x, n), -5, 5);
+            PlotFunction(x => ChebyshevHermitePolynom(x, n), -2, 2, "hermite.png");
 
             Console.WriteLine("Корни многочлена Чебышева-Легерра:");
-            WriteAllRoots((double x) => ChebyshevLegarrPolynom(x, n), 0, 100);
+            WriteAllRoots((double x) => ChebyshevLegarrPolynom(x, n), 0, 20);
+            PlotFunction(x => ChebyshevLegarrPolynom(x, n), 0, 20, "legerre.png");
+            
+            // TODO: убрать этот костыль
+            GnuPlot.Replot();
         }
     }
 

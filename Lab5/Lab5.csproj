@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Program.exe" />
+    <None Remove="Program.cs~" />
+    <None Remove=".Program.cs.un~" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
