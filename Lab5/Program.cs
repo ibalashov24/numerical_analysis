@@ -1,4 +1,4 @@
-using System;
+    using System;
 using System.Collections.Generic;
 
 namespace Lab5
@@ -186,6 +186,19 @@ namespace Lab5
         }
 
         /// <summary>
+        /// Печатает экстремумы для многочлена Чебышёва 1 рода на промежутке от -1 до 1
+        /// </summary>
+        /// <param name="polynomPower">Степень многочлена Чебышёва</param>
+        private static void WriteChebyshevExtremas(int polynomPower)
+        {
+            Console.WriteLine($"Экстремумы многочлена Чебышёва 1 рода степени {polynomPower}: ");
+            for (int i = 0; i <= polynomPower; ++i)
+            {
+                Console.WriteLine($"ext_{i} = {Math.Cos(Math.PI * i / polynomPower)}");
+            }
+        }
+
+        /// <summary>
         /// Выполняет уточнение корней уравнения F(x)=0 методом половинного деления
         /// </summary>
         /// <param name="function">Непрерывная функция, 
@@ -249,9 +262,12 @@ namespace Lab5
             WriteAllRoots((double x) => LegendrePolynom(x, n), -1, 1);
             PlotFunction(x => LegendrePolynom(x, n), -1, 1, "legendre.png");
 
-            Console.WriteLine("Корни иногочлена Чебышева 1 рода:");
+            Console.WriteLine("Корни многочлена Чебышева 1 рода:");
             WriteAllRoots(x => ChebyshevPolynom(x, n), -1, 1);
             PlotFunction(function: x => ChebyshevPolynom(x, n), -1, 1, "chebyshev.png");
+            PlotFunction(function: x => ChebyshevPolynom(x, n) / Math.Pow(2, n - 1),
+                -1, 1, "chebyshev-reduced.png");
+            WriteChebyshevExtremas(n);
 
             Console.WriteLine("Корни многочлена Чебышёва-Эрмита:");
             WriteAllRoots((double x) => ChebyshevHermitePolynom(x, n), -5, 5);
