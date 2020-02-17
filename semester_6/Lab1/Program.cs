@@ -27,8 +27,45 @@ namespace Lab1
 
         static Row SolveSystemSingleDivision(Matrix matrix)
         {
+            Matrix triangularMatrix = new Matrix(matrix.Count);
+            for (int i = 0; i < matrix.Count; ++i)
+            {
+                triangularMatrix[i] = new Column(matrix.Count + 1);
+            }
             
+            // Forward movement
+            for (int k = 0; k < matrix.Count; ++k)
+            {
+                var temp = triangularMatrix[k][k];
 
+                for (int j = k + 1; j < matrix.Count + 1; ++j)
+                {
+                     triangularMatrix[k][j] /= temp;
+                } 
+
+                for (int i = k + 1; i < matrix.Count; ++i)
+                {
+                    temp = triangularMatrix[i][k];
+
+                    for (int j = k + 1; j < matrix.Count + 1; ++j)
+                    {
+                        triangularMatrix[i][j] -= triangularMatrix[k][j] * temp;
+                    }   
+                }
+            }
+
+            // Backward movement
+            var solution = new Row(matrix.Count);
+            for (int i = matrix.Count - 1; i >= 0; --i)
+            {
+                solution[i] = triangularMatrix[i][matrix.Count];
+                for (int j = i + 1; j < matrix.Count; ++j)
+                {
+                    solution[i] -= triangularMatrix[i][j] * solution[j];
+                }
+            }
+
+            return solution;
         }
 
         static Row SolveSystemLU(Matrix matrix)
